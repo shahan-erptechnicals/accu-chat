@@ -2,12 +2,15 @@ import { useState, useEffect } from 'react';
 import { ChatSidebar } from '@/components/chat/ChatSidebar';
 import { ChatInterface } from '@/components/chat/ChatInterface';
 import { AccountingDashboard } from '@/components/dashboard/AccountingDashboard';
+import { BudgetManager } from '@/components/budget/BudgetManager';
 import { useChat } from '@/hooks/useChat';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { MessageCircle, BarChart3, PiggyBank } from 'lucide-react';
 
 const Index = () => {
-  const [showDashboard, setShowDashboard] = useState(false);
+  const [activeTab, setActiveTab] = useState('chat');
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -113,9 +116,9 @@ const Index = () => {
                 </p>
               </div>
               <div className="p-4 border rounded-lg">
-                <h3 className="font-semibold mb-2">Auto Categorization</h3>
+                <h3 className="font-semibold mb-2">Budget Management</h3>
                 <p className="text-sm text-muted-foreground">
-                  Automatically categorize and organize your transactions
+                  Create and track budgets with intelligent spending alerts
                 </p>
               </div>
               <div className="p-4 border rounded-lg">
@@ -140,11 +143,15 @@ const Index = () => {
 
   const handleSelectConversation = (conversationId: string) => {
     selectConversation(conversationId);
-    setShowDashboard(false);
+    setActiveTab('chat');
   };
 
   const handleShowDashboard = () => {
-    setShowDashboard(true);
+    setActiveTab('dashboard');
+  };
+
+  const handleShowBudgets = () => {
+    setActiveTab('budgets');
   };
 
   return (
@@ -157,21 +164,48 @@ const Index = () => {
           onSelectConversation={handleSelectConversation}
           onNewConversation={newConversation}
           onShowDashboard={handleShowDashboard}
-          showDashboard={showDashboard}
+          showDashboard={activeTab === 'dashboard'}
         />
       </div>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {showDashboard ? (
-          <AccountingDashboard />
-        ) : (
-          <ChatInterface
-            messages={messages}
-            onSendMessage={sendMessage}
-            isLoading={chatLoading}
-          />
-        )}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full">
+          {/* Tab Navigation */}
+          <div className="border-b px-6 py-3">
+            <TabsList className="grid w-full max-w-md grid-cols-3">
+              <TabsTrigger value="chat" className="flex items-center gap-2">
+                <MessageCircle className="h-4 w-4" />
+                AI Assistant
+              </TabsTrigger>
+              <TabsTrigger value="dashboard" className="flex items-center gap-2">
+                <BarChart3 className="h-4 w-4" />
+                Dashboard
+              </TabsTrigger>
+              <TabsTrigger value="budgets" className="flex items-center gap-2">
+                <PiggyBank className="h-4 w-4" />
+                Budgets
+              </TabsTrigger>
+            </TabsList>
+          </div>
+          
+          {/* Tab Content */}
+          <TabsContent value="chat" className="flex-1 m-0 p-0">
+            <ChatInterface
+              messages={messages}
+              onSendMessage={sendMessage}
+              isLoading={chatLoading}
+            />
+          </TabsContent>
+          
+          <TabsContent value="dashboard" className="flex-1 m-0 p-6 overflow-auto">
+            <AccountingDashboard />
+          </TabsContent>
+          
+          <TabsContent value="budgets" className="flex-1 m-0 p-6 overflow-auto">
+            <BudgetManager />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

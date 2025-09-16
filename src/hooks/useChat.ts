@@ -182,138 +182,30 @@ export function useChat() {
     }
   };
 
-  const generateAIResponse = async (userMessage: string, conversationId: string): Promise<string> => {
-    // Simple AI-like responses based on keywords
-    const message = userMessage.toLowerCase();
-    
-    if (message.includes('transaction') || message.includes('expense') || message.includes('income')) {
-      if (message.includes('record') || message.includes('add')) {
-        return `I can help you record a new transaction! Here's what I need:
+  const generateAIResponse = async (userMessage: string, conversationId: string, attachments?: any[]): Promise<string> => {
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) throw new Error('Not authenticated');
 
-1. **Amount**: How much was the transaction?
-2. **Type**: Is this an income or expense?
-3. **Description**: What was this transaction for?
-4. **Account**: Which account should this be recorded to?
-5. **Category**: How should we categorize this?
-6. **Date**: When did this transaction occur?
+      const { data, error } = await supabase.functions.invoke('ai-accountant', {
+        body: {
+          message: userMessage,
+          conversationId: conversationId,
+          userId: userData.user.id,
+          attachments: attachments || []
+        }
+      });
 
-You can provide these details, and I'll help you record it in your accounting system.`;
+      if (error) {
+        console.error('AI function error:', error);
+        return "I apologize, but I'm having trouble processing your request right now. Please try again.";
       }
-      
-      if (message.includes('show') || message.includes('list')) {
-        return `I can show you your recent transactions! You can view them in the Dashboard tab, or I can help you:
 
-- Filter transactions by date range
-- Show transactions by category
-- Display transactions for specific accounts
-- Generate transaction reports
-
-What specific transactions would you like to see?`;
-      }
+      return data.response || "I apologize, but I couldn't generate a response. Please try again.";
+    } catch (error) {
+      console.error('Error calling AI function:', error);
+      return "I'm currently experiencing technical difficulties. Please try again in a moment.";
     }
-    
-    if (message.includes('report') || message.includes('summary')) {
-      return `I can help you generate various financial reports:
-
-📊 **Available Reports:**
-- Profit & Loss Statement
-- Balance Sheet
-- Cash Flow Statement
-- Transaction Summary by Category
-- Monthly/Quarterly Financial Summary
-
-📈 **Current Quick Summary:**
-- Check your Dashboard tab for real-time financial overview
-- Recent transactions are displayed with categories
-- Account balances are calculated automatically
-
-Which report would you like me to generate for you?`;
-    }
-    
-    if (message.includes('account') || message.includes('chart')) {
-      return `Your Chart of Accounts is already set up with standard categories:
-
-💰 **Assets**: Cash, Bank Account, Accounts Receivable
-💳 **Liabilities**: Accounts Payable
-📈 **Equity**: Owner Equity  
-💵 **Revenue**: Revenue accounts for income tracking
-💸 **Expenses**: Operating Expenses for cost tracking
-
-I can help you:
-- Add new accounts
-- Modify existing accounts  
-- Explain account types
-- Set up account hierarchies
-
-What would you like to do with your accounts?`;
-    }
-    
-    if (message.includes('category') || message.includes('categorize')) {
-      return `Your transactions can be organized using categories for better tracking:
-
-🏷️ **Default Categories Available:**
-- Office Supplies (Red)
-- Travel (Orange) 
-- Marketing (Purple)
-- Software (Cyan)
-- Utilities (Green)
-- Sales (Green)
-- Services (Blue)
-
-I can help you:
-- Create new categories with custom colors
-- Assign categories to transactions
-- Bulk categorize similar transactions
-- Generate category-based reports
-
-What categorization do you need help with?`;
-    }
-    
-    if (message.includes('help') || message.includes('how')) {
-      return `I'm your AI Accounting Assistant! Here's how I can help:
-
-💼 **Transaction Management:**
-- Record new income/expense transactions
-- Edit or delete existing transactions
-- Bulk import transactions from files
-- Categorize and organize transactions
-
-📊 **Financial Reporting:**
-- Generate P&L statements
-- Create balance sheets
-- Show cash flow analysis
-- Custom date range reports
-
-💡 **Smart Features:**
-- Auto-categorize similar transactions
-- Detect duplicate entries
-- Calculate tax implications
-- Provide financial insights
-
-🔧 **Account Management:**  
-- Set up chart of accounts
-- Manage categories and tags
-- Configure accounting rules
-- Data backup and export
-
-Just ask me what you'd like to do, and I'll guide you through it!`;
-    }
-    
-    return `Thanks for your message! As your AI Accounting Assistant, I can help you with:
-
-💰 **Recording Transactions** - Add income/expenses with proper categorization
-📊 **Financial Reports** - Generate P&L, balance sheets, and summaries  
-📈 **Account Management** - Organize your chart of accounts
-🏷️ **Categorization** - Tag and organize transactions
-💡 **Financial Insights** - Get advice on your financial data
-
-Try asking me things like:
-- "Record a new expense transaction"
-- "Show me my financial summary" 
-- "Generate a profit & loss report"
-- "Help me categorize transactions"
-
-What accounting task can I help you with today?`;
   };
 
   const selectConversation = (conversationId: string) => {

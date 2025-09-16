@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card } from '@/components/ui/card';
-import { Send, Bot, User } from 'lucide-react';
+import { Send, Bot, User, Paperclip, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface Message {
@@ -21,7 +21,9 @@ interface ChatInterfaceProps {
 
 export function ChatInterface({ messages, onSendMessage, isLoading = false }: ChatInterfaceProps) {
   const [input, setInput] = useState('');
+  const [attachments, setAttachments] = useState<File[]>([]);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,7 +31,19 @@ export function ChatInterface({ messages, onSendMessage, isLoading = false }: Ch
     
     const message = input.trim();
     setInput('');
+    setAttachments([]);
     await onSendMessage(message);
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files);
+      setAttachments(prev => [...prev, ...newFiles]);
+    }
+  };
+
+  const removeAttachment = (index: number) => {
+    setAttachments(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -136,12 +150,50 @@ export function ChatInterface({ messages, onSendMessage, isLoading = false }: Ch
       {/* Input Area */}
       <div className="border-t p-4">
         <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
+          {/* Attachments Display */}
+          {attachments.length > 0 && (
+            <div className="mb-3 flex flex-wrap gap-2">
+              {attachments.map((file, index) => (
+                <div key={index} className="flex items-center gap-2 bg-muted px-3 py-1 rounded-lg text-sm">
+                  <Paperclip className="h-3 w-3" />
+                  <span>{file.name}</span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeAttachment(index)}
+                    className="h-4 w-4 p-0"
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+          
           <div className="flex gap-2">
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileSelect}
+              multiple
+              accept=".pdf,.png,.jpg,.jpeg,.txt,.csv"
+              className="hidden"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isLoading}
+            >
+              <Paperclip className="h-4 w-4" />
+            </Button>
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Ask me about your accounting..."
+              placeholder="Ask me about your accounting or attach invoices/receipts..."
               className="min-h-[44px] max-h-32 resize-none"
               rows={1}
             />
