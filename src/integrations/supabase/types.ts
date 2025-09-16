@@ -96,6 +96,69 @@ export type Database = {
           },
         ]
       }
+      budgets: {
+        Row: {
+          account_id: string | null
+          amount: number
+          budget_type: string
+          category_id: string | null
+          created_at: string
+          end_date: string
+          id: string
+          is_active: boolean
+          name: string
+          spent_amount: number
+          start_date: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_id?: string | null
+          amount: number
+          budget_type: string
+          category_id?: string | null
+          created_at?: string
+          end_date: string
+          id?: string
+          is_active?: boolean
+          name: string
+          spent_amount?: number
+          start_date: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string | null
+          amount?: number
+          budget_type?: string
+          category_id?: string | null
+          created_at?: string
+          end_date?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          spent_amount?: number
+          start_date?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "budgets_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "budgets_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           color: string | null
