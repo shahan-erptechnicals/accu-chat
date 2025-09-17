@@ -215,6 +215,8 @@ export function useChat() {
   const newConversation = () => {
     setCurrentConversationId(undefined);
     setMessages([]);
+    // Refresh conversations to ensure we have the latest data
+    fetchConversations();
   };
 
   return {

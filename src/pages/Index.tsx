@@ -146,6 +146,11 @@ const Index = () => {
     setActiveTab('chat');
   };
 
+  const handleNewConversation = () => {
+    newConversation();
+    setActiveTab('chat');
+  };
+
   const handleShowDashboard = () => {
     setActiveTab('dashboard');
   };
@@ -162,7 +167,7 @@ const Index = () => {
           conversations={conversations}
           currentConversationId={currentConversationId}
           onSelectConversation={handleSelectConversation}
-          onNewConversation={newConversation}
+          onNewConversation={handleNewConversation}
           onShowDashboard={handleShowDashboard}
           showDashboard={activeTab === 'dashboard'}
         />

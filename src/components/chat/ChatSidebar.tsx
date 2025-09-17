@@ -55,7 +55,7 @@ export function ChatSidebar({
             "w-full justify-start gap-2",
             !showDashboard && "bg-sidebar-accent text-sidebar-accent-foreground"
           )}
-          onClick={() => onSelectConversation(currentConversationId || '')}
+          onClick={() => currentConversationId ? onSelectConversation(currentConversationId) : onNewConversation()}
         >
           <MessageSquare className="h-4 w-4" />
           Chat
