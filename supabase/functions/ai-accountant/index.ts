@@ -7,7 +7,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+const openRouterApiKey = Deno.env.get('OPENROUTER_API_KEY');
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
@@ -85,14 +85,16 @@ For CREATE_ACCOUNT, include: name, account_type, code
 
 If you cannot perform an action or need more information, just provide a helpful response without the action structure.`;
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
+        'Authorization': `Bearer ${openRouterApiKey}`,
         'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://tgshonwmthturuxeceqr.supabase.co',
+        'X-Title': 'AI Accountant',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'google/gemma-3-27b-it',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: message }

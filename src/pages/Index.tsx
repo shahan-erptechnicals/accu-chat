@@ -172,7 +172,7 @@ const Index = () => {
       <div className="flex-1 flex flex-col">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full">
           {/* Tab Navigation */}
-          <div className="border-b px-6 py-3">
+          <div className="border-b px-6 py-3 flex justify-between items-center">
             <TabsList className="grid w-full max-w-md grid-cols-3">
               <TabsTrigger value="chat" className="flex items-center gap-2">
                 <MessageCircle className="h-4 w-4" />
@@ -187,6 +187,12 @@ const Index = () => {
                 Budgets
               </TabsTrigger>
             </TabsList>
+            <button
+              onClick={signOut}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Sign Out
+            </button>
           </div>
           
           {/* Tab Content */}
