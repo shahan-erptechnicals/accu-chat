@@ -53,6 +53,23 @@ export function AccountingDashboard() {
 
   useEffect(() => {
     fetchDashboardData();
+    
+    // Set up real-time subscription for transactions
+    const channel = supabase
+      .channel('dashboard-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'transactions' },
+        () => {
+          console.log('Transaction change detected, refreshing dashboard...');
+          fetchDashboardData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchDashboardData = async () => {

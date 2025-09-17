@@ -57,6 +57,23 @@ export function BudgetManager() {
     fetchBudgets();
     fetchCategories();
     fetchAccounts();
+    
+    // Set up real-time subscription for budget updates
+    const channel = supabase
+      .channel('budget-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'transactions' },
+        () => {
+          console.log('Transaction change detected, refreshing budgets...');
+          fetchBudgets();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchBudgets = async () => {

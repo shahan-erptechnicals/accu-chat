@@ -190,7 +190,7 @@ async function performAction(parsedResponse: any, userId: string) {
             category_id: data.category_id,
             transaction_date: data.transaction_date || new Date().toISOString().split('T')[0],
             notes: data.notes || '',
-            status: 'completed'
+            status: 'cleared'
           }])
           .select()
           .single();
