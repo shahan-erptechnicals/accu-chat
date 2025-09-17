@@ -55,13 +55,26 @@ serve(async (req) => {
       .order('created_at', { ascending: false })
       .limit(5);
 
-    const systemPrompt = `You are an AI Accounting Assistant. You can perform actual database operations to help users manage their finances.
+    const systemPrompt = `You are an AI Accounting Assistant with deep understanding of accounting principles. You can perform actual database operations to help users manage their finances.
 
 Available accounts: ${JSON.stringify(accounts?.map(a => ({ id: a.id, name: a.name, type: a.account_type })))}
 Available categories: ${JSON.stringify(categories?.map(c => ({ id: c.id, name: c.name, color: c.color })))}
 Recent transactions: ${JSON.stringify(recentTransactions?.slice(0, 3))}
 
 ${context}
+
+CRITICAL ACCOUNTING RULES:
+1. EXPENSES are money going OUT (payments, purchases, costs) - use NEGATIVE amounts and EXPENSE accounts
+2. INCOME/REVENUE is money coming IN (sales, payments received) - use POSITIVE amounts and REVENUE accounts
+3. When someone says "I paid $X for Y" or "I bought X for $Y" - this is an EXPENSE (negative amount)
+4. When someone says "I received $X" or "I earned $X" - this is INCOME (positive amount)
+
+Account Types:
+- asset: Cash, Bank Account, Accounts Receivable
+- liability: Accounts Payable, Loans
+- equity: Owner Equity, Retained Earnings
+- revenue: Sales, Service Revenue (for INCOME - positive amounts)
+- expense: Operating Expenses, Office Supplies, Travel, etc. (for EXPENSES - negative amounts)
 
 You can perform these actions:
 1. CREATE_TRANSACTION - Record new transactions
@@ -78,7 +91,8 @@ When users ask you to record transactions or perform actions, respond with a JSO
   "response": "Human readable response"
 }
 
-For CREATE_TRANSACTION, include: amount, description, account_id, category_id, transaction_date, notes
+For CREATE_TRANSACTION, include: amount (negative for expenses, positive for income), description, account_id (expense account for expenses, revenue account for income), category_id, transaction_date, notes
+For UPDATE_TRANSACTION, include: id, amount, description, account_id, category_id, transaction_date, notes
 For CREATE_BUDGET, include: name, amount, budget_type, category_id, start_date, end_date
 For CREATE_CATEGORY, include: name, description, color
 For CREATE_ACCOUNT, include: name, account_type, code
@@ -205,6 +219,35 @@ async function performAction(parsedResponse: any, userId: string) {
         return {
           action: 'CREATE_TRANSACTION',
           response: `✅ Transaction recorded successfully! Added ${data.amount > 0 ? 'income' : 'expense'} of $${Math.abs(data.amount)} for "${data.description}".`
+        };
+
+      case 'UPDATE_TRANSACTION':
+        console.log('Updating transaction with data:', data);
+        const { data: updatedTransaction, error: updateError } = await supabase
+          .from('transactions')
+          .update({
+            amount: data.amount,
+            description: data.description,
+            account_id: data.account_id,
+            category_id: data.category_id,
+            transaction_date: data.transaction_date,
+            notes: data.notes || ''
+          })
+          .eq('id', data.id)
+          .eq('user_id', userId)
+          .select()
+          .single();
+
+        if (updateError) {
+          console.error('Transaction update error:', updateError);
+          throw updateError;
+        }
+        
+        console.log('Transaction updated successfully:', updatedTransaction);
+        
+        return {
+          action: 'UPDATE_TRANSACTION',
+          response: `✅ Transaction updated successfully! Modified ${data.amount > 0 ? 'income' : 'expense'} of $${Math.abs(data.amount)} for "${data.description}".`
         };
 
       case 'CREATE_BUDGET':

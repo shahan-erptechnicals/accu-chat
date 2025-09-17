@@ -113,16 +113,17 @@ export function AccountingDashboard() {
         const amount = parseFloat(transaction.amount);
         const accountType = transaction.account?.account_type;
         
-        switch (accountType) {
-          case 'revenue':
+        // Expenses are negative amounts, Income/Revenue are positive amounts
+        if (amount < 0) {
+          // This is an expense (negative amount)
+          totalExpenses += Math.abs(amount); // Convert to positive for display
+        } else if (amount > 0) {
+          // This is income/revenue (positive amount)
+          if (accountType === 'revenue') {
             totalRevenue += amount;
-            break;
-          case 'expense':
-            totalExpenses += Math.abs(amount);
-            break;
-          case 'asset':
+          } else if (accountType === 'asset') {
             totalAssets += amount;
-            break;
+          }
         }
       });
 
