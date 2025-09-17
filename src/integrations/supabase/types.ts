@@ -210,6 +210,63 @@ export type Database = {
         }
         Relationships: []
       }
+      customers: {
+        Row: {
+          address: string | null
+          balance: number | null
+          company_name: string | null
+          created_at: string
+          credit_limit: number | null
+          customer_type: string
+          email: string | null
+          id: string
+          is_active: boolean
+          name: string
+          notes: string | null
+          payment_terms: number | null
+          phone: string | null
+          tax_number: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          balance?: number | null
+          company_name?: string | null
+          created_at?: string
+          credit_limit?: number | null
+          customer_type?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          notes?: string | null
+          payment_terms?: number | null
+          phone?: string | null
+          tax_number?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          balance?: number | null
+          company_name?: string | null
+          created_at?: string
+          credit_limit?: number | null
+          customer_type?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+          payment_terms?: number | null
+          phone?: string | null
+          tax_number?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string
@@ -279,6 +336,7 @@ export type Database = {
           category_id: string | null
           conversation_id: string | null
           created_at: string
+          customer_id: string | null
           description: string
           id: string
           notes: string | null
@@ -287,6 +345,7 @@ export type Database = {
           transaction_date: string
           updated_at: string
           user_id: string
+          vendor_id: string | null
         }
         Insert: {
           account_id: string
@@ -294,6 +353,7 @@ export type Database = {
           category_id?: string | null
           conversation_id?: string | null
           created_at?: string
+          customer_id?: string | null
           description: string
           id?: string
           notes?: string | null
@@ -302,6 +362,7 @@ export type Database = {
           transaction_date?: string
           updated_at?: string
           user_id: string
+          vendor_id?: string | null
         }
         Update: {
           account_id?: string
@@ -309,6 +370,7 @@ export type Database = {
           category_id?: string | null
           conversation_id?: string | null
           created_at?: string
+          customer_id?: string | null
           description?: string
           id?: string
           notes?: string | null
@@ -317,6 +379,7 @@ export type Database = {
           transaction_date?: string
           updated_at?: string
           user_id?: string
+          vendor_id?: string | null
         }
         Relationships: [
           {
@@ -341,6 +404,63 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      vendors: {
+        Row: {
+          address: string | null
+          balance: number | null
+          company_name: string | null
+          created_at: string
+          credit_limit: number | null
+          email: string | null
+          id: string
+          is_active: boolean
+          name: string
+          notes: string | null
+          payment_terms: number | null
+          phone: string | null
+          tax_number: string | null
+          updated_at: string
+          user_id: string
+          vendor_type: string
+        }
+        Insert: {
+          address?: string | null
+          balance?: number | null
+          company_name?: string | null
+          created_at?: string
+          credit_limit?: number | null
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          notes?: string | null
+          payment_terms?: number | null
+          phone?: string | null
+          tax_number?: string | null
+          updated_at?: string
+          user_id: string
+          vendor_type?: string
+        }
+        Update: {
+          address?: string | null
+          balance?: number | null
+          company_name?: string | null
+          created_at?: string
+          credit_limit?: number | null
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+          payment_terms?: number | null
+          phone?: string | null
+          tax_number?: string | null
+          updated_at?: string
+          user_id?: string
+          vendor_type?: string
+        }
+        Relationships: []
       }
     }
     Views: {

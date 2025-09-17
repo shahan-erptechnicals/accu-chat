@@ -69,6 +69,14 @@ export function BudgetManager() {
           fetchBudgets();
         }
       )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'budgets' },
+        () => {
+          console.log('Budget change detected, refreshing budgets...');
+          fetchBudgets();
+        }
+      )
       .subscribe();
 
     return () => {

@@ -48,9 +48,23 @@ serve(async (req) => {
       .eq('user_id', userId)
       .limit(10);
 
+    const { data: customers } = await supabase
+      .from('customers')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('is_active', true)
+      .limit(10);
+
+    const { data: vendors } = await supabase
+      .from('vendors')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('is_active', true)
+      .limit(10);
+
     const { data: recentTransactions } = await supabase
       .from('transactions')
-      .select('*, accounts(name), categories(name)')
+      .select('*, accounts(name), categories(name), customers(name), vendors(name)')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
       .limit(5);
@@ -59,6 +73,8 @@ serve(async (req) => {
 
 Available accounts: ${JSON.stringify(accounts?.map(a => ({ id: a.id, name: a.name, type: a.account_type })))}
 Available categories: ${JSON.stringify(categories?.map(c => ({ id: c.id, name: c.name, color: c.color })))}
+Available customers: ${JSON.stringify(customers?.map(c => ({ id: c.id, name: c.name, type: c.customer_type })))}
+Available vendors: ${JSON.stringify(vendors?.map(v => ({ id: v.id, name: v.name, type: v.vendor_type })))}
 Recent transactions: ${JSON.stringify(recentTransactions?.slice(0, 3))}
 
 ${context}
@@ -76,13 +92,20 @@ Account Types:
 - revenue: Sales, Service Revenue (for INCOME - positive amounts)
 - expense: Operating Expenses, Office Supplies, Travel, etc. (for EXPENSES - negative amounts)
 
+Customer & Vendor Management:
+- Use customer_id when recording sales or customer payments
+- Use vendor_id when recording purchases or vendor payments
+- Create customers/vendors when mentioned but not in the available list
+
 You can perform these actions:
 1. CREATE_TRANSACTION - Record new transactions
 2. CREATE_BUDGET - Set up budgets
 3. CREATE_CATEGORY - Add new categories
 4. CREATE_ACCOUNT - Add new accounts
-5. UPDATE_TRANSACTION - Modify existing transactions
-6. ANALYZE_SPENDING - Provide financial insights
+5. CREATE_CUSTOMER - Add new customers/clients
+6. CREATE_VENDOR - Add new vendors/suppliers
+7. UPDATE_TRANSACTION - Modify existing transactions
+8. ANALYZE_SPENDING - Provide financial insights
 
 When users ask you to record transactions or perform actions, respond with a JSON object containing:
 {
@@ -91,11 +114,13 @@ When users ask you to record transactions or perform actions, respond with a JSO
   "response": "Human readable response"
 }
 
-For CREATE_TRANSACTION, include: amount (negative for expenses, positive for income), description, account_id (expense account for expenses, revenue account for income), category_id, transaction_date, notes
-For UPDATE_TRANSACTION, include: id, amount, description, account_id, category_id, transaction_date, notes
+For CREATE_TRANSACTION, include: amount (negative for expenses, positive for income), description, account_id (expense account for expenses, revenue account for income), category_id, customer_id (optional), vendor_id (optional), transaction_date, notes
+For UPDATE_TRANSACTION, include: id, amount, description, account_id, category_id, customer_id, vendor_id, transaction_date, notes
 For CREATE_BUDGET, include: name, amount, budget_type, category_id, start_date, end_date
 For CREATE_CATEGORY, include: name, description, color
 For CREATE_ACCOUNT, include: name, account_type, code
+For CREATE_CUSTOMER, include: name, email, phone, company_name, customer_type ('customer' or 'client')
+For CREATE_VENDOR, include: name, email, phone, company_name, vendor_type ('vendor' or 'supplier')
 
 If you cannot perform an action or need more information, just provide a helpful response without the action structure.`;
 
@@ -202,6 +227,8 @@ async function performAction(parsedResponse: any, userId: string) {
             description: data.description,
             account_id: data.account_id,
             category_id: data.category_id,
+            customer_id: data.customer_id || null,
+            vendor_id: data.vendor_id || null,
             transaction_date: data.transaction_date || new Date().toISOString().split('T')[0],
             notes: data.notes || '',
             status: 'cleared'
@@ -230,6 +257,8 @@ async function performAction(parsedResponse: any, userId: string) {
             description: data.description,
             account_id: data.account_id,
             category_id: data.category_id,
+            customer_id: data.customer_id || null,
+            vendor_id: data.vendor_id || null,
             transaction_date: data.transaction_date,
             notes: data.notes || ''
           })
@@ -308,6 +337,48 @@ async function performAction(parsedResponse: any, userId: string) {
         return {
           action: 'CREATE_ACCOUNT',
           response: `✅ Account "${data.name}" created successfully!`
+        };
+
+      case 'CREATE_CUSTOMER':
+        const { data: customer, error: customerError } = await supabase
+          .from('customers')
+          .insert([{
+            user_id: userId,
+            name: data.name,
+            email: data.email || null,
+            phone: data.phone || null,
+            company_name: data.company_name || null,
+            customer_type: data.customer_type || 'customer'
+          }])
+          .select()
+          .single();
+
+        if (customerError) throw customerError;
+
+        return {
+          action: 'CREATE_CUSTOMER',
+          response: `✅ Customer "${data.name}" created successfully!`
+        };
+
+      case 'CREATE_VENDOR':
+        const { data: vendor, error: vendorError } = await supabase
+          .from('vendors')
+          .insert([{
+            user_id: userId,
+            name: data.name,
+            email: data.email || null,
+            phone: data.phone || null,
+            company_name: data.company_name || null,
+            vendor_type: data.vendor_type || 'vendor'
+          }])
+          .select()
+          .single();
+
+        if (vendorError) throw vendorError;
+
+        return {
+          action: 'CREATE_VENDOR',
+          response: `✅ Vendor "${data.name}" created successfully!`
         };
 
       default:

@@ -3,11 +3,13 @@ import { ChatSidebar } from '@/components/chat/ChatSidebar';
 import { ChatInterface } from '@/components/chat/ChatInterface';
 import { AccountingDashboard } from '@/components/dashboard/AccountingDashboard';
 import { BudgetManager } from '@/components/budget/BudgetManager';
+import { CustomerManager } from '@/components/customers/CustomerManager';
+import { VendorManager } from '@/components/vendors/VendorManager';
 import { useChat } from '@/hooks/useChat';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MessageCircle, BarChart3, PiggyBank } from 'lucide-react';
+import { MessageCircle, BarChart3, PiggyBank, Users, Truck } from 'lucide-react';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('chat');
@@ -178,7 +180,7 @@ const Index = () => {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full">
           {/* Tab Navigation */}
           <div className="border-b px-6 py-3 flex justify-between items-center">
-            <TabsList className="grid w-full max-w-md grid-cols-3">
+            <TabsList className="grid w-full max-w-2xl grid-cols-5">
               <TabsTrigger value="chat" className="flex items-center gap-2">
                 <MessageCircle className="h-4 w-4" />
                 AI Assistant
@@ -190,6 +192,14 @@ const Index = () => {
               <TabsTrigger value="budgets" className="flex items-center gap-2">
                 <PiggyBank className="h-4 w-4" />
                 Budgets
+              </TabsTrigger>
+              <TabsTrigger value="customers" className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Customers
+              </TabsTrigger>
+              <TabsTrigger value="vendors" className="flex items-center gap-2">
+                <Truck className="h-4 w-4" />
+                Vendors
               </TabsTrigger>
             </TabsList>
             <button
@@ -215,6 +225,14 @@ const Index = () => {
           
           <TabsContent value="budgets" className="flex-1 m-0 p-6 overflow-auto">
             <BudgetManager />
+          </TabsContent>
+          
+          <TabsContent value="customers" className="flex-1 m-0 p-6 overflow-auto">
+            <CustomerManager />
+          </TabsContent>
+          
+          <TabsContent value="vendors" className="flex-1 m-0 p-6 overflow-auto">
+            <VendorManager />
           </TabsContent>
         </Tabs>
       </div>
