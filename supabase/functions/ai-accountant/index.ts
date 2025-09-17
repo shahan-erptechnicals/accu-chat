@@ -112,11 +112,22 @@ If you cannot perform an action or need more information, just provide a helpful
     // Try to parse as JSON to see if it's an action
     let actionResult = null;
     try {
-      const parsedResponse = JSON.parse(aiResponse);
-      if (parsedResponse.action) {
-        actionResult = await performAction(parsedResponse, userId);
+      // Clean the response by removing markdown code blocks if present
+      let cleanResponse = aiResponse.trim();
+      if (cleanResponse.startsWith('```json')) {
+        cleanResponse = cleanResponse.replace(/```json\n?/g, '').replace(/\n?```$/g, '');
+      } else if (cleanResponse.startsWith('```')) {
+        cleanResponse = cleanResponse.replace(/```\n?/g, '').replace(/\n?```$/g, '');
       }
-    } catch {
+      
+      const parsedResponse = JSON.parse(cleanResponse);
+      if (parsedResponse.action) {
+        console.log('Performing action:', parsedResponse.action);
+        actionResult = await performAction(parsedResponse, userId);
+        console.log('Action result:', actionResult);
+      }
+    } catch (error) {
+      console.log('Not a JSON action, treating as regular response:', error.message);
       // Not a JSON action, just a regular response
     }
 
@@ -168,6 +179,7 @@ async function performAction(parsedResponse: any, userId: string) {
   try {
     switch (action) {
       case 'CREATE_TRANSACTION':
+        console.log('Creating transaction with data:', data);
         const { data: transaction, error: transactionError } = await supabase
           .from('transactions')
           .insert([{
@@ -177,13 +189,18 @@ async function performAction(parsedResponse: any, userId: string) {
             account_id: data.account_id,
             category_id: data.category_id,
             transaction_date: data.transaction_date || new Date().toISOString().split('T')[0],
-            notes: data.notes,
+            notes: data.notes || '',
             status: 'completed'
           }])
           .select()
           .single();
 
-        if (transactionError) throw transactionError;
+        if (transactionError) {
+          console.error('Transaction creation error:', transactionError);
+          throw transactionError;
+        }
+        
+        console.log('Transaction created successfully:', transaction);
         
         return {
           action: 'CREATE_TRANSACTION',
